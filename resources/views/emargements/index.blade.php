@@ -23,7 +23,7 @@
                     <table class="table table-striped table-hover align-middle">
                         <thead style="background-color: #eef2ff; color: #1e3a8a;">
                         <tr>
-                            <th>ID</th>
+{{--                            <th>ID</th>--}}
                             <th>Cours</th>
                             <th>Salle</th>
                             <th>Date</th>
@@ -38,7 +38,7 @@
                         <tbody>
                         @forelse ($emargements as $emargement)
                             <tr>
-                                <td>{{ $emargement->id }}</td>
+{{--                                <td>{{ $emargement->id }}</td>--}}
                                 <td>{{ $emargement->cours->nom ?? 'N/A' }}</td>
                                 <td>{{ $emargement->cours->salle->libelle ?? 'N/A' }}</td>
                                 <td>{{ $emargement->date->format('d/m/Y H:i') }}</td>

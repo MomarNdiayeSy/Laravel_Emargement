@@ -6,6 +6,13 @@
             <div class="col-md-6">
                 <h1 class="mb-4 text-center" style="font-weight: 600; color: #1e3a8a;">Connexion</h1>
 
+                @if (session('status'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('status') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @if ($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <ul class="mb-0">
@@ -23,10 +30,10 @@
                             @csrf
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label for="email" class="form-label">Email</label>
+                                    <label for="email" class="form-label">Adresse e-mail</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required>
+                                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required autofocus>
                                     </div>
                                     @error('email')
                                     <span class="text-danger small">{{ $message }}</span>
@@ -47,6 +54,9 @@
                                 <button type="submit" class="btn btn-primary w-100" style="background-color: #3498db; border: none;">
                                     <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
                                 </button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{{ route('password.request') }}" class="text-muted">Mot de passe oublié ?</a>
                             </div>
                         </form>
                     </div>
