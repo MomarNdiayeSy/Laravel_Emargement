@@ -61,8 +61,26 @@ class CoursController extends Controller
             'professeur_id' => 'required|exists:users,id',
             'salle_id' => 'required|exists:salles,id',
             'description' => 'nullable|string',
-            'heure_debut' => 'required|date',
-            'heure_fin' => 'required|date|after:heure_debut',
+            'heure_debut' => [
+                'required',
+                'date',
+                'after_or_equal:' . now()->startOfDay()->toDateTimeString(), // Pas avant aujourd'hui
+                function ($attribute, $value, $fail) {
+                    $heureDebut = \Carbon\Carbon::parse($value);
+                    // Si la date est aujourd'hui, vérifier que l'heure n'est pas passée
+                    if ($heureDebut->isToday() && $heureDebut->isPast()) {
+                        $fail('L’heure de début ne peut pas être une heure passée pour aujourd’hui.');
+                    }
+                },
+            ],
+            'heure_fin' => [
+                'required',
+                'date',
+                'after:heure_debut', // Doit être après heure_debut
+            ],
+        ], [
+            'heure_debut.after_or_equal' => 'La date et l’heure de début doivent être aujourd’hui ou dans le futur.',
+            'heure_fin.after' => 'L’heure de fin doit être postérieure à l’heure de début.',
         ]);
 
         $conflitSalle = Cours::where('salle_id', $request->salle_id)
