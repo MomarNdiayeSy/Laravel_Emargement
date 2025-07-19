@@ -29,7 +29,7 @@
                         <table class="table table-striped table-hover align-middle">
                             <thead style="background-color: #eef2ff; color: #1e3a8a;">
                             <tr>
-                                <th>ID</th>
+{{--                                <th>ID</th>--}}
                                 <th>Libellé</th>
                                 <th>Actions</th>
                             </tr>
@@ -37,7 +37,7 @@
                             <tbody>
                             @forelse ($salles as $salle)
                                 <tr>
-                                    <td>{{ $salle->id }}</td>
+{{--                                    <td>{{ $salle->id }}</td>--}}
                                     <td>{{ $salle->libelle }}</td>
                                     <td>
                                         <a href="{{ route('admin.salles.edit', $salle->id) }}" class="btn btn-warning btn-sm" style="background-color: #f59e0b; border: none;">

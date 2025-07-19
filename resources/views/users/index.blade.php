@@ -29,7 +29,7 @@
                         <table class="table table-striped table-hover align-middle">
                             <thead style="background-color: #eef2ff; color: #1e3a8a;">
                             <tr>
-                                <th>ID</th>
+{{--                                <th>ID</th>--}}
                                 <th>Nom</th>
                                 <th>Prénom</th>
                                 <th>Email</th>
@@ -40,7 +40,7 @@
                             <tbody>
                             @forelse ($users as $user)
                                 <tr>
-                                    <td>{{ $user->id }}</td>
+{{--                                    <td>{{ $user->id }}</td>--}}
                                     <td>{{ $user->nom }}</td>
                                     <td>{{ $user->prenom }}</td>
                                     <td>{{ $user->email }}</td>

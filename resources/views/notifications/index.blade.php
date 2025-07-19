@@ -23,7 +23,7 @@
                     <table class="table table-striped table-hover align-middle">
                         <thead style="background-color: #eef2ff; color: #1e3a8a;">
                         <tr>
-                            <th>ID</th>
+{{--                            <th>ID</th>--}}
                             <th>Message</th>
                             <th>Destinataire</th>
                             <th>Date d’envoi</th>
@@ -32,7 +32,7 @@
                         <tbody>
                         @forelse ($notifications as $notification)
                             <tr>
-                                <td>{{ $notification->id }}</td>
+{{--                                <td>{{ $notification->id }}</td>--}}
                                 <td>
                                     <span title="{{ $notification->message }}">{{ Str::limit($notification->message, 50) }}</span>
                                 </td>

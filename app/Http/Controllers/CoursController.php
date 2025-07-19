@@ -9,20 +9,40 @@ use Illuminate\Support\Facades\Mail;
 
 class CoursController extends Controller
 {
+
     public function index()
     {
         $query = Cours::with(['professeur', 'salle']);
         if (auth()->user()->role === 'professeur') {
             $query->where('professeur_id', auth()->id());
         } elseif (auth()->user()->role === 'gestionnaire' || auth()->user()->role === 'admin') {
-            // Pas de restriction pour gestionnaire ou admin, ils voient tous les cours
+            // Pas de restriction pour gestionnaire ou admin
         } else {
             abort(403, 'Accès non autorisé.');
         }
         $cours = $query->get();
-        $role = auth()->user()->role; // Passer le rôle à la vue
-        return view('cours.index', compact('cours', 'role'));
+        $role = auth()->user()->role;
+
+        // Si professeur, calculer les nouveaux cours et mettre à jour notified_at une seule fois
+        if ($role === 'professeur') {
+            $lastLogin = auth()->user()->last_login_at ?? '1970-01-01';
+            $newCours = $cours->whereNull('notified_at')
+                ->where('created_at', '>', $lastLogin);
+
+            // Mettre à jour notified_at pour les nouveaux cours à cette première connexion
+            if ($newCours->isNotEmpty()) {
+                Cours::whereIn('id', $newCours->pluck('id'))->update(['notified_at' => now()]);
+            }
+
+            $newCoursCount = $newCours->count();
+        } else {
+            $newCoursCount = 0;
+        }
+
+        return view('cours.index', compact('cours', 'role', 'newCoursCount'));
     }
+
+    // ... (show et store inchangés sauf ajustement mineur ci-dessous)
 
     public function show($id)
     {
@@ -32,22 +52,14 @@ class CoursController extends Controller
         } elseif (auth()->user()->role === 'gestionnaire' || auth()->user()->role === 'admin') {
             // Pas de restriction pour gestionnaire ou admin
         }
-        else {
-//            abort(403, 'Accès non autorisé.');
+
+        // On garde is_new pour d'autres usages éventuels, mais pas pour le badge
+        if (auth()->user()->role === 'professeur' && $cours->is_new) {
+            $cours->update(['is_new' => false]);
         }
+
         $role = auth()->user()->role;
         return view('cours.show', compact('cours', 'role'));
-    }
-
-    public function create()
-    {
-        if (auth()->user()->role !== 'admin' && auth()->user()->role !== 'gestionnaire') {
-            abort(403, 'Accès non autorisé.');
-        }
-        $professeurs = \App\Models\User::where('role', 'professeur')->get();
-        $salles = \App\Models\Salle::all();
-        $role = auth()->user()->role;
-        return view('cours.create', compact('professeurs', 'salles', 'role'));
     }
 
     public function store(Request $request)
@@ -61,8 +73,25 @@ class CoursController extends Controller
             'professeur_id' => 'required|exists:users,id',
             'salle_id' => 'required|exists:salles,id',
             'description' => 'nullable|string',
-            'heure_debut' => 'required|date',
-            'heure_fin' => 'required|date|after:heure_debut',
+            'heure_debut' => [
+                'required',
+                'date',
+                'after_or_equal:' . now()->startOfDay()->toDateTimeString(),
+                function ($attribute, $value, $fail) {
+                    $heureDebut = \Carbon\Carbon::parse($value);
+                    if ($heureDebut->isToday() && $heureDebut->isPast()) {
+                        $fail('L’heure de début ne peut pas être une heure passée pour aujourd’hui.');
+                    }
+                },
+            ],
+            'heure_fin' => [
+                'required',
+                'date',
+                'after:heure_debut',
+            ],
+        ], [
+            'heure_debut.after_or_equal' => 'La date et l’heure de début doivent être aujourd’hui ou dans le futur.',
+            'heure_fin.after' => 'L’heure de fin doit être postérieure à l’heure de début.',
         ]);
 
         $conflitSalle = Cours::where('salle_id', $request->salle_id)
@@ -95,7 +124,7 @@ class CoursController extends Controller
             return back()->withErrors(['professeur_id' => 'Ce professeur a déjà un cours à cette heure.']);
         }
 
-        $cours = Cours::create($request->all());
+        $cours = Cours::create($request->all() + ['is_new' => true, 'notified_at' => null]);
         SendCoursNotification::dispatch($cours);
         Mail::to($cours->professeur->email)->send(new CoursAssigned($cours, 'created'));
         Mail::to(auth()->user()->email)->send(new CoursAssigned($cours, 'created'));
@@ -103,6 +132,18 @@ class CoursController extends Controller
         $redirectRoute = auth()->user()->role === 'gestionnaire' ? 'gestionnaire.cours.index' : 'admin.cours.index';
         return redirect()->route($redirectRoute)->with('success', 'Cours créé et notifications envoyées.');
     }
+    public function create()
+    {
+        if (auth()->user()->role !== 'admin' && auth()->user()->role !== 'gestionnaire') {
+            abort(403, 'Accès non autorisé.');
+        }
+        $professeurs = \App\Models\User::where('role', 'professeur')->get();
+        $salles = \App\Models\Salle::all();
+        $role = auth()->user()->role;
+        return view('cours.create', compact('professeurs', 'salles', 'role'));
+    }
+
+
 
     public function edit($id)
     {

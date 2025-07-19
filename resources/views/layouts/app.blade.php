@@ -70,6 +70,12 @@
             font-size: 1rem;
             margin-right: 1rem;
         }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -96,14 +102,28 @@
                             <a class="nav-link" href="{{ route('admin.cours.index') }}"><i class="bi bi-book me-2"></i>Cours</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.emargements.index') }}"><i class="bi bi-check-square me-2"></i>Émargements</a>
+                            <a class="nav-link" href="{{ route('admin.emargements.index') }}">
+                                <i class="bi bi-check-square me-2"></i>Émargements
+                                @if (isset($pendingEmargementsCount) && $pendingEmargementsCount > 0)
+                                    <span class="badge bg-warning text-dark ms-2 blink">
+                                        <i class="bi bi-bell"></i> {{ $pendingEmargementsCount }}
+                                    </span>
+                                @endif
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.rapports.index') }}"><i class="bi bi-bar-chart me-2"></i>Rapports</a>
                         </li>
                     @elseif (auth()->user()->role === 'professeur')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('professeur.cours.index') }}"><i class="bi bi-book me-2"></i>Cours</a>
+                            <a class="nav-link" href="{{ route('professeur.cours.index') }}">
+                                <i class="bi bi-book me-2"></i>Cours
+                                @if (isset($newCoursCount) && $newCoursCount > 0)
+                                    <span class="badge bg-warning text-dark ms-2 blink">
+                                        <i class="bi bi-bell"></i> {{ $newCoursCount }}
+                                    </span>
+                                @endif
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('professeur.emargements.index') }}"><i class="bi bi-check-square me-2"></i>Émargements</a>

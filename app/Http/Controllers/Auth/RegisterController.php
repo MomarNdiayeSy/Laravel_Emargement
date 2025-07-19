@@ -47,8 +47,6 @@ class RegisterController extends Controller
             'role' => $data['role'],
         ]);
     }
-
-    // Redirection personnalisée selon le rôle après inscription
     protected function redirectTo()
     {
         $role = Auth::user()->role;
