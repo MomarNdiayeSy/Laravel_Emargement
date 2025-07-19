@@ -11,6 +11,14 @@
             </div>
         @endif
 
+        @if (auth()->user()->role === 'admin' && $pendingEmargementsCount > 0)
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Vous avez {{ $pendingEmargementsCount }} émargement(s) en attente de validation !
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="text-end mb-3">
             <a href="{{ route(auth()->user()->role . '.emargements.create') }}" class="btn btn-primary" style="background-color: #3498db; border: none;">
                 <i class="bi bi-plus-circle me-1"></i> Ajouter un émargement
@@ -23,7 +31,6 @@
                     <table class="table table-striped table-hover align-middle">
                         <thead style="background-color: #eef2ff; color: #1e3a8a;">
                         <tr>
-{{--                            <th>ID</th>--}}
                             <th>Cours</th>
                             <th>Salle</th>
                             <th>Date</th>
@@ -38,8 +45,14 @@
                         <tbody>
                         @forelse ($emargements as $emargement)
                             <tr>
-{{--                                <td>{{ $emargement->id }}</td>--}}
-                                <td>{{ $emargement->cours->nom ?? 'N/A' }}</td>
+                                <td>
+                                    {{ $emargement->cours->nom ?? 'N/A' }}
+                                    @if (auth()->user()->role === 'admin' && !$emargement->valide_par_admin)
+                                        <span class="badge bg-warning text-dark ms-2">
+                                            <i class="bi bi-bell"></i> Nouveau
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>{{ $emargement->cours->salle->libelle ?? 'N/A' }}</td>
                                 <td>{{ $emargement->date->format('d/m/Y H:i') }}</td>
                                 <td>

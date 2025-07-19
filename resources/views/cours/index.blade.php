@@ -11,6 +11,13 @@
             </div>
         @endif
 
+        @if ($role === 'professeur' && $newCoursCount > 0)
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                Vous avez {{ $newCoursCount }} nouveau(x) cours !
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         @if ($role === 'admin' || $role === 'gestionnaire')
             <div class="text-end mb-3">
                 <a href="{{ route($role . '.cours.create') }}" class="btn btn-primary" style="background-color: #3498db; border: none;">
@@ -25,7 +32,6 @@
                     <table class="table table-striped table-hover align-middle">
                         <thead style="background-color: #eef2ff; color: #1e3a8a;">
                         <tr>
-{{--                            <th>ID</th>--}}
                             <th>Nom</th>
                             <th>Description</th>
                             <th>Heure début</th>
@@ -38,8 +44,14 @@
                         <tbody>
                         @forelse ($cours as $cour)
                             <tr>
-{{--                                <td>{{ $cour->id }}</td>--}}
-                                <td>{{ $cour->nom }}</td>
+                                <td>
+                                    {{ $cour->nom }}
+                                    @if ($role === 'professeur' && !$cour->notified_at && $cour->created_at > (auth()->user()->last_login_at ?? '1970-01-01'))
+                                        <span class="badge bg-warning text-dark ms-2 blink">
+                                            <i class="bi bi-bell"></i> Nouveau
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>{{ $cour->description ?? 'N/A' }}</td>
                                 <td>{{ $cour->heure_debut->format('d/m/Y H:i') }}</td>
                                 <td>{{ $cour->heure_fin->format('d/m/Y H:i') }}</td>
@@ -74,4 +86,13 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
 @endsection

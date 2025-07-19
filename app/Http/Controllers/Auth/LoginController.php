@@ -22,8 +22,13 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            // Mettre à jour last_login_at ici
+            $user = Auth::user();
+            $user->update(['last_login_at' => now()]);
+            $this->authenticated($request, $user);
+
             // Redirection selon le rôle
-            $role = Auth::user()->role;
+            $role = $user->role;
             switch ($role) {
                 case 'admin':
                     return redirect()->intended(route('admin.users.index'));
@@ -45,5 +50,10 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+
+    protected function authenticated(Request $request, $user)
+    {
+        $user->update(['last_login_at' => now()]);
     }
 }

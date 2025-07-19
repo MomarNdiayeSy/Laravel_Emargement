@@ -18,7 +18,13 @@ class EmargementController extends Controller
             $query->where('professeur_id', auth()->id());
         }
         $emargements = $query->get();
-        return view('emargements.index', compact('emargements'));
+
+        // Compter les émargements en attente pour l'admin
+        $pendingEmargementsCount = (auth()->user()->role === 'admin')
+            ? Emargement::where('valide_par_admin', false)->count()
+            : 0;
+
+        return view('emargements.index', compact('emargements', 'pendingEmargementsCount'));
     }
 
     public function show($id)
